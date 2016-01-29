@@ -269,7 +269,7 @@ public class ClientCommunicator implements Constants {
 				break;
 
 			default:
-				this.execute(CHAT + " unknown command incoming: \n" + incommand);
+				this.execute(CHAT + DELIMITER + incommand);
 
 		}
 
