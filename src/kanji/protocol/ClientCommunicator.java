@@ -6,6 +6,8 @@ import kanji.server.game.Stone;
 public class ClientCommunicator implements Constants {
 	private Client client;
 	private String opponent;
+	private String[] commands;
+	private String firstcommand;
 
 	public ClientCommunicator(Client client) {
 		this.client = client;
@@ -19,25 +21,19 @@ public class ClientCommunicator implements Constants {
 	 * formatted as <COMMAND> <COMMAND2> ..
 	 */
 	public void execute(String incommand) {
-		String[] commands = incommand.split(DELIMITER); 
-		String command = commands[0].trim();
-		switch (command) {
+		handleIncommand(incommand);
+		handleCommand(incommand);
+
+	}
+
+	private void handleCommand(String incommand) {
+		switch (firstcommand) {
 			case NEWPLAYERACCEPTED:
 				sendCommand("O");
 				break;
 				
 			case GETEXTENSIONS:
-				String options = EXTENSIONS + DELIMITER;
-				if (client.getClientName() == null) {
-					options = options + NEWPLAYER + DELIMITER;
-				} 
-				if (client.getGame() == null) {
-					options = options + CHALLENGE + DELIMITER + CHAT + DELIMITER + QUIT;
-				} else {
-					options = options + CHAT + DELIMITER + QUIT;
-				}
-
-				sendCommand(options);
+				getExtensions();
 				break;
 				
 			case OPTIONS:
@@ -122,18 +118,12 @@ public class ClientCommunicator implements Constants {
 				
 
 			case HINT :
-				if (commands.length >= 3) {
-					String row = commands[1].trim();
-					String col = commands[2].trim();
-					System.out.printf("There's an open spot on row: %s, column: %s\n", row, col);
-				} else {
-					sendCommand(FAILURE + DELIMITER + ARGUMENTSMISSING);
-				}
+			hint();
 				break;
 				
 			case BOARD:
 				if (commands.length > 3) {
-					if (this.client.getGame().getBoard().getStringInclCaptives().trim().equals(incommand.substring(command.length()).trim())) {
+					if (this.client.getGame().getBoard().getStringInclCaptives().trim().equals(incommand.substring(firstcommand.length()).trim())) {
 						sendCommand("O");
 					} else {
 						this.client.displayBoard(commands[1].trim(), commands[2].trim(), commands[3].trim(), 9);
@@ -162,8 +152,8 @@ public class ClientCommunicator implements Constants {
 			
 	
 			case CHAT:
-				if (incommand.length() > command.length()) {
-					System.out.println(incommand.substring(command.length()).trim());
+				if (incommand.length() > firstcommand.length()) {
+					System.out.println(incommand.substring(firstcommand.length()).trim());
 				} else { 
 					sendCommand(FAILURE + DELIMITER + ARGUMENTSMISSING);
 				}
@@ -191,7 +181,7 @@ public class ClientCommunicator implements Constants {
 				
 			case AVAILABLESTRATEGIES:
 				if (commands.length > 1) {
-					String strat = incommand.substring(command.length());
+					String strat = incommand.substring(firstcommand.length());
 					System.out.println("The available strategies are: " + strat);
 				} else {
 					System.out.println("there are no strategies available.");
@@ -207,11 +197,7 @@ public class ClientCommunicator implements Constants {
 				break;
 				
 			case CURRENTGAMES:
-				if (commands.length > 1) {
-					System.out.println("Games in progress: " + incommand.substring(commands[0].length()));
-				} else {
-					this.execute(NOGAMESPLAYING);
-				}
+			currentGames(incommand);
 				break;
 				
 			case OBSERVEDGAME:
@@ -272,7 +258,43 @@ public class ClientCommunicator implements Constants {
 				this.execute(CHAT + DELIMITER + incommand);
 
 		}
+	}
 
+	private void currentGames(String incommand) {
+		if (commands.length > 1) {
+			System.out.println("Games in progress: " + incommand.substring(commands[0].length()));
+		} else {
+			this.execute(NOGAMESPLAYING);
+		}
+	}
+
+	private void hint() {
+		if (commands.length >= 3) {
+			String row = commands[1].trim();
+			String col = commands[2].trim();
+			System.out.printf("There's an open spot on row: %s, column: %s\n", row, col);
+		} else {
+			sendCommand(FAILURE + DELIMITER + ARGUMENTSMISSING);
+		}
+	}
+
+	private void handleIncommand(String incommand) {
+		commands = incommand.split(DELIMITER); 
+		firstcommand = commands[0].trim();
+	}
+
+	private void getExtensions() {
+		String options = EXTENSIONS + DELIMITER;
+		if (client.getClientName() == null) {
+			options = options + NEWPLAYER + DELIMITER;
+		} 
+		if (client.getGame() == null) {
+			options = options + CHALLENGE + DELIMITER + CHAT + DELIMITER + QUIT;
+		} else {
+			options = options + CHAT + DELIMITER + QUIT;
+		}
+
+		sendCommand(options);
 	}
 
 	

@@ -21,64 +21,17 @@ public class ServerCommunicator implements Constants {
 	public void execute(String input) {
 		String[] commands = input.split(DELIMITER); 
 		String command = commands[0];
+		//Command command = parseInput(input) 
+		// command.execute();
+		
 		switch (command) {
 
 			case EXTENSIONS:
-				if (input.length() < 2) {
-					this.handler.sendCommands(FAILURE + DELIMITER + ARGUMENTSMISSING);
-				} else {
-					for (String s : commands) {
-						String sTrim = s.trim();
-						switch (sTrim) {
-							case NEWPLAYER:
-								break;
-							case CHALLENGE:
-								this.handler.setChallengeable(true);
-								break;
-							case CHAT:
-								this.handler.setCanChat(true);
-								break;
-							default:
-								//doe lekker helemaal niets :)
-						}
-					}
-				}
+				handleExtensions(input, commands);
 				break;
 
 			case GETOPTIONS:
-				String options = OPTIONS + DELIMITER + GETEXTENSIONS + DELIMITER + GETOPTIONS;
-				if (this.handler.getName() == null) {
-					options = options + DELIMITER + NEWPLAYER;
-				} else {
-					if (this.handler.isCanChat()) {
-						for (ClientHandler ch : this.handler.getServer().handlersInLobby()) {
-							if (ch != this.handler && ch.isCanChat()) {
-								options = options + DELIMITER + CHAT;
-								break;
-							}
-						}
-					}
-					if (this.handler.getGame() == null) {
-						if (this.handler.isWaitingForGame() || this.handler.isChallengePending()) {
-							options = options + DELIMITER + CANCEL;
-						} else {
-							if (this.handler.isChallengeable() && !this.handler.isChallengePending()) {
-								for (ClientHandler ch : this.handler.getServer().handlersInLobby()) {
-									if (ch.isChallengeable() && !ch.isChallengePending()) {
-										options = options + DELIMITER + CHALLENGE;
-										break;
-									}
-								}
-							}
-							options = options + DELIMITER + PLAY + DELIMITER + PRACTICE;
-						}
-					} else {
-						options = options + DELIMITER + MOVE + DELIMITER + PASS + DELIMITER + GETHINT + DELIMITER + STOPGAME;	
-					}
-				}
-				options = options + DELIMITER + QUIT;
-				
-				this.handler.sendCommands(options);
+				handleGetOptions();
 				break;
 				
 			case GETEXTENSIONS:
@@ -476,6 +429,64 @@ public class ServerCommunicator implements Constants {
 		}
 
 	}
+
+	private void handleGetOptions() {
+		String options = OPTIONS + DELIMITER + GETEXTENSIONS + DELIMITER + GETOPTIONS;
+		if (this.handler.getName() == null) {
+			options = options + DELIMITER + NEWPLAYER;
+		} else {
+			if (this.handler.isCanChat()) {
+				for (ClientHandler ch : this.handler.getServer().handlersInLobby()) {
+					if (ch != this.handler && ch.isCanChat()) {
+						options = options + DELIMITER + CHAT;
+						break;
+					}
+				}
+			}
+			if (this.handler.getGame() == null) {
+				if (this.handler.isWaitingForGame() || this.handler.isChallengePending()) {
+					options = options + DELIMITER + CANCEL;
+				} else {
+					if (this.handler.isChallengeable() && !this.handler.isChallengePending()) {
+						for (ClientHandler ch : this.handler.getServer().handlersInLobby()) {
+							if (ch.isChallengeable() && !ch.isChallengePending()) {
+								options = options + DELIMITER + CHALLENGE;
+								break;
+							}
+						}
+					}
+					options = options + DELIMITER + PLAY + DELIMITER + PRACTICE;
+				}
+			} else {
+				options = options + DELIMITER + MOVE + DELIMITER + PASS + DELIMITER + GETHINT + DELIMITER + STOPGAME;	
+			}
+		}
+		options = options + DELIMITER + QUIT;
+		
+		this.handler.sendCommands(options);
+	}
+
+	private void handleExtensions(String input, String[] commands) {
+		if (input.length() < 2) {
+			this.handler.sendCommands(FAILURE + DELIMITER + ARGUMENTSMISSING);
+		} else {
+			for (String s : commands) {
+				String sTrim = s.trim();
+				switch (sTrim) {
+					case NEWPLAYER:
+						break;
+					case CHALLENGE:
+						this.handler.setChallengeable(true);
+						break;
+					case CHAT:
+						this.handler.setCanChat(true);
+						break;
+					default:
+						//doe lekker helemaal niets :)
+				}
+			}
+		}
+	}
 	
 	/**.
 	 * Check if a given string represents an integer
@@ -540,5 +551,18 @@ public class ServerCommunicator implements Constants {
 		ch2.sendCommands(GAMESTART + DELIMITER + ch1.getName() + DELIMITER + "9" + DELIMITER + WHITE);
 	}
 	
+	private Command parseInput(String input) {
+		return new ExtensionsCommand();
+	}
+	
+	private interface Command {
+		void execute();
+	}
+	
+	private class ExtensionsCommand implements Command {
+		public void execute() {
+			
+		}
+	}
 	
 }
