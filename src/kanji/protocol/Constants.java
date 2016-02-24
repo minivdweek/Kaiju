@@ -1,4 +1,5 @@
 package kanji.protocol;
+
 /**
  * Go! Protocol
  *
@@ -29,9 +30,11 @@ package kanji.protocol;
  * At this moment, we end the game if two players consecutively pass. How to deal with an appropriate game ending has to
  * be further elaborated.
  *
+ * @author michiel.klitsie
+ * @author joris.vandijk
  * @author ron.weikamp
  * @author liesbeth.wijers
- * @version 0.6
+ * @version 1.0
  */
 
 public interface Constants {

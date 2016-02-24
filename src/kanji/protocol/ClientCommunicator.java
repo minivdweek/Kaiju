@@ -45,80 +45,15 @@ public class ClientCommunicator implements Constants {
 				break;
 				
 			case GAMESTART:
-				if (commands.length >= 4) {
-					this.opponent = commands[1].trim();
-					int size = Integer.parseInt(commands[2].trim());
-					String color = commands[3].trim();
-					client.setPlayer(client.getClientName());
-					client.setOpponent(opponent);
-					System.out.println("Your opponent is: " + opponent);
-					if (color.equals(WHITE)) {
-						client.getPlayer().setStone(WHITE);
-						client.getOpponent().setStone(BLACK);
-						System.out.println("You're WHITE, so wait for your opponent.");
-					} else if (color.equals(BLACK)) {
-						client.getPlayer().setStone(BLACK);
-						client.getOpponent().setStone(WHITE);
-						System.out.println("You're BLACK, so you start.");
-					} else {
-						this.sendCommand(FAILURE + DELIMITER + ILLEGALARGUMENT);
-						break;
-					}
-					client.startGame(size);
-					
-				} else {
-					sendCommand(FAILURE + " " + ARGUMENTSMISSING);
-				}
+				(new ClientGameStartCommand(client, incommand)).execute();
 				break;
 				
 			case MOVE:
-				//interpret the move
-				int move = -1;
-				if (commands.length < 3) {
-					sendCommand(FAILURE + DELIMITER + ARGUMENTSMISSING);
-					break;
-				} else if (commands[2].trim().equals(PASS)) {
-					this.client.getGame().pass();
-					if (this.client.getGame().getPassCount() >= 2) {
-						System.out.println("The game should finish now.");
-						break;
-					}
-					this.client.getGame().nextPlayer();
-				} else if (commands.length < 4) {
-					if (isPositiveInteger(commands[2].trim())) {
-						move = Integer.parseInt(commands[2].trim());
-					} else {
-						sendCommand(FAILURE + DELIMITER + ILLEGALARGUMENT);
-						break;
-					} 
-				} else if (commands.length >= 4) {
-					if (isPositiveInteger(commands[2].trim()) && isPositiveInteger(commands[3].trim())) {
-						int row = Integer.parseInt(commands[2].trim());
-						int col = Integer.parseInt(commands[3].trim());
-						move = client.getGame().getBoard().getIndex(row, col);
-					} else {
-						sendCommand(FAILURE + DELIMITER + ILLEGALARGUMENT);
-						break;
-					}
-				} 
-				//HANDLE THE MOVE!!!!
-				if (move >= 0) {
-					client.getGame().getBoard().setIntersection(move, Stone.toStone(commands[1].trim()));
-					client.getGame().nextPlayer();
-					client.getGame().resetPass();
-				}
-				
-				
-				//return some result
-				if (move >= 0 && !client.getPlayer().getStone().equals(Stone.toStone(commands[1].trim()))) {
-					System.out.println("Your turn, use the command: MOVE <row> <col>");
-				}
-				sendCommand("O");
+				(new ClientMoveCommand(client, incommand)).execute();
 				break;
 				
-
 			case HINT :
-			hint();
+				(new ClientHintCommand(client, incommand)).execute();
 				break;
 				
 			case BOARD:
@@ -265,16 +200,6 @@ public class ClientCommunicator implements Constants {
 			System.out.println("Games in progress: " + incommand.substring(commands[0].length()));
 		} else {
 			this.execute(NOGAMESPLAYING);
-		}
-	}
-
-	private void hint() {
-		if (commands.length >= 3) {
-			String row = commands[1].trim();
-			String col = commands[2].trim();
-			System.out.printf("There's an open spot on row: %s, column: %s\n", row, col);
-		} else {
-			sendCommand(FAILURE + DELIMITER + ARGUMENTSMISSING);
 		}
 	}
 
@@ -458,7 +383,7 @@ public class ClientCommunicator implements Constants {
 		if (client.getGame() != null) {
 			String[] cb = client.getGame().getBoard().getStringInclCaptives().split(" ");
 			client.displayBoard(cb[0], cb[1], cb[2], client.getGame().getBoard().getDimension());
-			if (client.getGame().getCurrentPlayer() != client.getPlayer()) {
+			if (client.getGame().getCurrentPlayer() == client.getPlayer()) {
 				System.out.println("\n It's Your turn!");
 			} else {
 				System.out.println("\n Wait for your opponent to make a move.");
