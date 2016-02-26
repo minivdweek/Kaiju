@@ -7,8 +7,6 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.InetAddress;
 import java.net.Socket;
-import java.net.UnknownHostException;
-
 import kanji.protocol.ClientCommunicator;
 import kanji.server.game.Game;
 import kanji.server.player.HumanPlayer;
@@ -46,7 +44,7 @@ public class Client implements Runnable {
 		}
 	}
 
-	/**
+	/**.
 	 * disconnect gracefully
 	 */
 	public void disconnect() {
@@ -62,7 +60,7 @@ public class Client implements Runnable {
 
 	}
 
-	/**
+	/**.
 	 * start listening to the server, and the user
 	 */
 	@Override
@@ -71,7 +69,7 @@ public class Client implements Runnable {
 		(new Thread(new Commander())).start();
 	}
 	
-	/**
+	/**.
 	 * sends a command over the socket
 	 * @param msg the command to be sent
 	 */
@@ -152,8 +150,12 @@ public class Client implements Runnable {
 		this.clientName = clientName;
 	}
 
-	public void startGame(int size) {
-		this.game = new Game(player, opponent, size);
+	public void startGame(int size, boolean start) {
+		if (start) {
+			this.game = new Game(player, opponent, size);
+		} else {
+			this.game = new Game(opponent, player, size);
+		}
 	}
 	
 	public void removeGame() {

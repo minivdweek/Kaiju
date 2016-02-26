@@ -1,13 +1,23 @@
 package kanji.protocol;
 
 import kanji.client.Client;
-import kanji.server.game.Stone;
+import kanji.protocol.command.ClientAvailablePlayersCommand;
+import kanji.protocol.command.ClientAvailableStrategiesCommand;
+import kanji.protocol.command.ClientBoardCommand;
+import kanji.protocol.command.ClientChatCommand;
+import kanji.protocol.command.ClientCurrentGamesCommand;
+import kanji.protocol.command.ClientExtensionsCommand;
+import kanji.protocol.command.ClientGameOverCommand;
+import kanji.protocol.command.ClientGameStartCommand;
+import kanji.protocol.command.ClientHintCommand;
+import kanji.protocol.command.ClientMoveCommand;
+import kanji.protocol.command.ClientOptionsCommand;
+import kanji.protocol.command.ClientYoureChallengedCommand;
+import kanji.protocol.command.ClientYouveChallengedCommand;
+import kanji.protocol.command.failure.ClientFailure;
 
 public class ClientCommunicator implements Constants {
 	private Client client;
-	private String opponent;
-	private String[] commands;
-	private String firstcommand;
 
 	public ClientCommunicator(Client client) {
 		this.client = client;
@@ -21,205 +31,71 @@ public class ClientCommunicator implements Constants {
 	 * formatted as <COMMAND> <COMMAND2> ..
 	 */
 	public void execute(String incommand) {
-		handleIncommand(incommand);
 		handleCommand(incommand);
-
 	}
 
 	private void handleCommand(String incommand) {
-		switch (firstcommand) {
+		switch (incommand.split(DELIMITER)[0].trim()) {
 			case NEWPLAYERACCEPTED:
 				sendCommand("O");
-				break;
-				
+				break;				
 			case GETEXTENSIONS:
-				getExtensions();
+				(new ClientExtensionsCommand(client, incommand)).execute();
 				break;
-				
 			case OPTIONS:
-				tui(commands, "What do you want to do?");
+				(new ClientOptionsCommand(client, incommand)).execute();
 				break;
-				
 			case WAITFOROPPONENT:
 				System.out.println("No opponent ready for a game, please wait a bit.");
 				break;
-				
 			case GAMESTART:
 				(new ClientGameStartCommand(client, incommand)).execute();
 				break;
-				
 			case MOVE:
 				(new ClientMoveCommand(client, incommand)).execute();
 				break;
-				
 			case HINT :
 				(new ClientHintCommand(client, incommand)).execute();
 				break;
-				
 			case BOARD:
-				if (commands.length > 3) {
-					if (this.client.getGame().getBoard().getStringInclCaptives().trim().equals(incommand.substring(firstcommand.length()).trim())) {
-						sendCommand("O");
-					} else {
-						this.client.displayBoard(commands[1].trim(), commands[2].trim(), commands[3].trim(), 9);
-					}
-				} else {
-					sendCommand(FAILURE + DELIMITER + ARGUMENTSMISSING);
-				}
+				(new ClientBoardCommand(client, incommand)).execute();
 				break;
-				
 			case GAMEOVER:
-				if (commands.length > 1) {
-					this.client.removeGame();
-					if (commands[1].equals(VICTORY)) {
-					System.out.println("You've won! :D");
-					} else if (commands[1].equals(DEFEAT)) {
-						System.out.println("You've lost :(");
-					} else if (commands[1].equals(DRAW)) {
-						System.out.println("It's a tie! :|");
-					} else {
-						sendCommand(FAILURE + DELIMITER + ILLEGALARGUMENT);
-					}
-				} else {
-					sendCommand(FAILURE + DELIMITER + ARGUMENTSMISSING);
-				}
-				break;
-			
-	
+				(new ClientGameOverCommand(client, incommand)).execute();
+				break;			
 			case CHAT:
-				if (incommand.length() > firstcommand.length()) {
-					System.out.println(incommand.substring(firstcommand.length()).trim());
-				} else { 
-					sendCommand(FAILURE + DELIMITER + ARGUMENTSMISSING);
-				}
+				(new ClientChatCommand(client, incommand)).execute();
 				break;
-	
 			case AVAILABLEPLAYERS:
-				System.out.println("The following players are available: \n" + incommand.substring(17));
+				(new ClientAvailablePlayersCommand(client, incommand)).execute();
 				break;
-				
 			case YOUVECHALLENGED:
-				if (commands.length > 1) {
-					System.out.printf("You've just challenged %s, please wait for a response!\n", commands[1]);
-				} else {
-					System.out.println("This shouldn't happen.");
-				}
+				(new ClientYouveChallengedCommand(client, incommand)).execute();
 				break;
-				
 			case YOURECHALLENGED:
-				if (commands.length > 1) {
-					System.out.printf("You've just been challenged by %s, please respond with:\nCHALLENGEACCEPTED or CHALLENGEDENIED\n", commands[1]);
-				} else {
-					System.out.println("You've been challenged, but you don't know by whom... respond with: \nCHALLENGEACCEPTED or CHALLENGEDENIED\n");
-				}
+				(new ClientYoureChallengedCommand(client, incommand)).execute();
 				break;
-				
 			case AVAILABLESTRATEGIES:
-				if (commands.length > 1) {
-					String strat = incommand.substring(firstcommand.length());
-					System.out.println("The available strategies are: " + strat);
-				} else {
-					System.out.println("there are no strategies available.");
-				}
+				(new ClientAvailableStrategiesCommand(client, incommand)).execute();
 				break;
-				
 			case CANCELLED:
 				System.out.println("Succesfully cancelled your request.");
 				break;
-	
 			case NOGAMESPLAYING:
 				System.out.println("There are no games playing right now.");
 				break;
-				
 			case CURRENTGAMES:
-			currentGames(incommand);
+				(new ClientCurrentGamesCommand(client, incommand)).execute();
 				break;
-				
 			case OBSERVEDGAME:
 				break;
-	
 			case FAILURE:
-				switch (commands[1].trim()) {
-					case UNKNOWNCOMMAND:
-						System.out.println("The server does not know this command.");
-						break;
-					case NOTAPPLICABLECOMMAND:
-						System.out.println("This command is not valid at this time.");
-						break;
-					case ARGUMENTSMISSING:
-						System.out.println("You're missing some arguments there, bud!");
-						break;
-					case NOTSUPPORTEDCOMMAND:
-						System.out.println("This command is not supported.");
-						break;
-					case TIMEOUTEXCEEDED:
-						System.out.println("You've waited too long.");
-						break;
-					case INVALIDNAME:
-						System.out.println("You can't take this name, please choose another");
-						break;
-					case NAMETAKEN:
-						System.out.println("This name is already taken, please choose another");
-						break;
-					case NAMENOTALLOWED:
-						System.out.println("You can't take this name, please choose another");
-						break;
-					case INVALIDMOVE:
-						System.out.println("This is an invalid move");
-						break;
-					case NOTYOURTURN:
-						System.out.println("Please wait for your turn!");
-						break;
-					case ILLEGALARGUMENT:
-						System.out.println("You can't use that argument.");
-						break;
-					case OTHERPLAYERCANNOTCHAT:
-						System.out.println("The other player can't talk to you");
-						break;
-					case PLAYERNOTAVAILABLE:
-						System.out.println("The other player(s) is/are not available");
-						break;
-					case GAMENOTPLAYING:
-						System.out.println("You have no game ;)");
-						break;
-					default:
-						System.out.println("Something went horribly wrong!");
-	
-	
-				}
+				(new ClientFailure(client, incommand)).execute();
 				break;
-
 			default:
 				this.execute(CHAT + DELIMITER + incommand);
 
 		}
-	}
-
-	private void currentGames(String incommand) {
-		if (commands.length > 1) {
-			System.out.println("Games in progress: " + incommand.substring(commands[0].length()));
-		} else {
-			this.execute(NOGAMESPLAYING);
-		}
-	}
-
-	private void handleIncommand(String incommand) {
-		commands = incommand.split(DELIMITER); 
-		firstcommand = commands[0].trim();
-	}
-
-	private void getExtensions() {
-		String options = EXTENSIONS + DELIMITER;
-		if (client.getClientName() == null) {
-			options = options + NEWPLAYER + DELIMITER;
-		} 
-		if (client.getGame() == null) {
-			options = options + CHALLENGE + DELIMITER + CHAT + DELIMITER + QUIT;
-		} else {
-			options = options + CHAT + DELIMITER + QUIT;
-		}
-
-		sendCommand(options);
 	}
 
 	
@@ -293,109 +169,6 @@ public class ClientCommunicator implements Constants {
 			default:
 				this.client.sendCommand(outcommand);
 		}
-	}
-	
-	/**
-	 * tests whether a string is a positive integer, so it can be used on the board
-	 * @param str the string to test
-	 * @return true if and only is the string contains only characters, such that
-	 * they are >0 and <=9
-	 */
-	public boolean isPositiveInteger(String str) {
-	    if (str == null) {
-	        return false;
-	    }
-	    int length = str.length();
-	    if (length == 0) {
-	        return false;
-	    }
-	    int i = 0;
-	    
-	    for (; i < length; i++) {
-	        char c = str.charAt(i);
-	        if (c < '0' || c > '9') {
-	            return false;
-	        }
-	    }
-	    return true;
-	}
-	
-	/**
-	 * clears space to create a beautiful interface
-	 * 
-	 */
-	public void clearDown() {
-		String image = "\n";
-		for (int i = 0; i < 60; i++) {
-			image += "\n";
-		}
-		System.out.print(image);
-	}
-	
-	public void makeMenu(String[] options) {
-		String mM = "- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -\n"
-				+ "Kanji by J van Dijk \n"
-				+ "- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -\n";
-		mM += "E: Get the extensions this server supplies.\n";
-		mM += "O: Get the current options.\n";
-		for (String s : options) {
-			String sTrim = s.trim();
-			switch (sTrim) {
-				case NEWPLAYER:
-					mM += "N <name>: Identify yourself!\n";
-					break;
-				case PLAY:
-					mM += "PL: Play a game against a random opponent.\n";
-					break;
-				case CHALLENGE:
-					mM += "CH: See the players you can challenge. \nCH <name>: Challenge <name>.\n";
-					break;
-				case CHAT:
-					mM += "C <text>: Share your thoughts!\n";
-					break;
-				case GETHINT:
-					mM += "H: Get a Hint.\n";
-					break;
-				case PRACTICE:
-					mM += "PR: Practice against a computer.\n";
-					break;
-				case MOVE:
-					mM += "M <row> <col>: Make a move.\n";
-					break;
-				case PASS:
-					mM += "P: Pass this round.\n";
-					break;
-				case STOPGAME:
-					mM += "S: Stop this game\n";
-					break;
-				case GETBOARD:
-					mM += "G: Get the current board, as it exists on the server.\n";
-				default:
-					//doe lekker helemaal niets :)
-			}
-		}
-		mM += "Q: Quit the client.\n";
-		mM += "- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -\n\n";
-		System.out.println(mM);
-	}
-
-	public void displayCurrentBoard() {
-		if (client.getGame() != null) {
-			String[] cb = client.getGame().getBoard().getStringInclCaptives().split(" ");
-			client.displayBoard(cb[0], cb[1], cb[2], client.getGame().getBoard().getDimension());
-			if (client.getGame().getCurrentPlayer() == client.getPlayer()) {
-				System.out.println("\n It's Your turn!");
-			} else {
-				System.out.println("\n Wait for your opponent to make a move.");
-			}
-		}
-	}
-	
-	public void tui(String[] options, String optional) {
-		clearDown();
-		displayCurrentBoard();
-		makeMenu(options);
-		System.out.println(optional);
 	}
 
 }

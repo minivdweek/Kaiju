@@ -1,4 +1,4 @@
-package kanji.protocol;
+package kanji.protocol.command;
 
 import kanji.client.Client;
 

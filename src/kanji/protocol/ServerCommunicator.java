@@ -216,6 +216,7 @@ public class ServerCommunicator implements Constants {
 				if (this.handler.getName() != null && this.handler.getGame() == null) {
 					if (this.handler.isWaitingForGame()) {
 						this.handler.setWaitingForGame(false);
+						this.handler.sendCommands(CANCELLED);
 					} else if (this.handler.isChallengePending() && this.handler.getChallenger() == null) {
 						this.handler.setChallengePending(false);
 						for (ClientHandler ch : this.handler.getServer().handlersInLobby()) {
@@ -226,13 +227,14 @@ public class ServerCommunicator implements Constants {
 								break;
 							}
 						}
+						this.handler.sendCommands(CANCELLED);
 					} else {
 						this.handler.sendCommands(FAILURE + DELIMITER + NOTAPPLICABLECOMMAND);
 					}
 				} else {
 					this.handler.sendCommands(FAILURE + DELIMITER + NOTAPPLICABLECOMMAND);
 				}
-				this.handler.sendCommands(CANCELLED);
+				
 				
 				break;
 
