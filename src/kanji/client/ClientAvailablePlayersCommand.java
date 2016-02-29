@@ -9,7 +9,6 @@ public class ClientAvailablePlayersCommand implements ClientCommand {
 
 	@Override
 	public void execute() {
-		// TODO Auto-generated method stub
 		System.out.println("The following players are available: \n" + subcommand);
 	}
 

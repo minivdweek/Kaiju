@@ -1,7 +1,6 @@
 package kanji.server.game;
 
 import java.util.HashSet;
-import java.util.Observable;
 import java.util.Set;
 
 /**.
@@ -461,7 +460,22 @@ public class Board {
     	this.oldBoards.add(b.getStringRepresentation());
     }
     
-    
+    public void recreateBoardFromString(String str) {
+    	String board = str.split(" ")[0].trim();
+    	this.whiteCaptives = Integer.parseInt(str.split(" ")[2].trim());
+    	this.blackCaptives = Integer.parseInt(str.split(" ")[1].trim());
+    	String is;
+    	for (int i = 0; i < board.length(); i++) {
+    		is = String.valueOf(board.charAt(i));
+    		if (is.equals("W")) {
+    			this.setIntersection(i, Stone.WHITE);
+    		} else if (is.equals("B")) {
+    			this.setIntersection(i, Stone.BLACK);
+    		} else {
+    			this.setIntersection(i, Stone.WHITE);
+    		}
+    	}
+    }
     
     
 }

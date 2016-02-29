@@ -13,10 +13,10 @@ public class HandlerExtensionsCommand implements HandlerCommand {
 
 	@Override
 	public void execute() {
-		handleExtensions(input, commands);
+		handleExtensions();
 	}
 	
-	private void handleExtensions(String input, String[] commands) {
+	private void handleExtensions() {
 		if (input.length() < 2) {
 			handler.sendCommands(FAILURE + DELIMITER + ARGUMENTSMISSING);
 		} else {

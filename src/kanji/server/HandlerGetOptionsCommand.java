@@ -40,7 +40,8 @@ public class HandlerGetOptionsCommand implements HandlerCommand {
 					options = options + DELIMITER + PLAY + DELIMITER + PRACTICE;
 				}
 			} else {
-				options = options + DELIMITER + MOVE + DELIMITER + PASS + DELIMITER + GETHINT + DELIMITER + STOPGAME;	
+				options = options + DELIMITER + MOVE + DELIMITER + PASS + DELIMITER 
+								+ GETHINT + DELIMITER + STOPGAME;	
 			}
 		}
 		options = options + DELIMITER + QUIT;

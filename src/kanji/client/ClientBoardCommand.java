@@ -21,6 +21,8 @@ public class ClientBoardCommand implements ClientCommand {
 				int size = (int) Math.sqrt(subcommands[1].trim().length());
 				client.displayBoard(subcommands[1].trim(), 
 								subcommands[2].trim(), subcommands[3].trim(), size);
+				client.getGame().getBoard().recreateBoardFromString(
+								command.substring(subcommands[0].length()).trim());
 			}
 		} else {
 			client.sendCommand(FAILURE + DELIMITER + ARGUMENTSMISSING);
