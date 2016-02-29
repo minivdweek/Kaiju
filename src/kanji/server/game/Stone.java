@@ -26,16 +26,6 @@ public enum Stone {
         }
     }
 	
-	public String toString(Stone stone) {
-		if (stone == WHITE) {
-			return "WHITE";
-		} else if (stone == BLACK) {
-			return "BLACK";
-		} else {
-			return "EMPTY";
-		}
-	}
-	
 	public static Stone toStone(String s) {
 		if (s.equals("WHITE")) {
 			return Stone.WHITE;

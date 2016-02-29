@@ -7,7 +7,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.InetAddress;
 import java.net.Socket;
-import kanji.protocol.ClientCommunicator;
+
 import kanji.server.game.Game;
 import kanji.server.player.HumanPlayer;
 import kanji.server.player.Player;

@@ -8,7 +8,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import kanji.client.Client;
-import kanji.protocol.ClientCommunicator;
+import kanji.client.ClientCommunicator;
 import kanji.server.Server;
 
 public class ClientCommunicatorTest {

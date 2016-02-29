@@ -3,31 +3,44 @@ package kanji.protocol;
 /**
  * Go! Protocol
  *
- * The client makes a connnection to the server via a Socket. The client and the server communicate via messages that
+ * The client makes a connnection to the server via a Socket. 
+ * The client and the server communicate via messages that
  * are Strings. Messages are of the following format:
  *
  * COMMAND ARG1 ARG2 ARG3
  *
- * where the arguments are separated by spaces and the number of arguments is command specific. This is a line based
+ * where the arguments are separated by spaces and the number 
+ * of arguments is command specific. This is a line based
  * protocol, such that every combination of command and arguments is on a new line.
  *
- * The server port should be configurable. By default the server will use port 1929 to wait for connecting clients. The
- * Server has to determine the board size, such that clients that connect to the server will automatically play the
- * boardsize determined by the server. Possible boardsizes are 9, 13 and 19 and it is assumed that the client supports
+ * The server port should be configurable. By default the server 
+ * will use port 1929 to wait for connecting clients. The
+ * Server has to determine the board size, such that clients that 
+ * connect to the server will automatically play the
+ * boardsize determined by the server. Possible boardsizes are 9, 
+ * 13 and 19 and it is assumed that the client supports
  * these.
  *
- * The server has the responsibility to keep track of the game state, that includes what stones are one the board,
- * how many captives of each color there are, whose turn it is, how many subsequent passes have occurred. The server
- * also has the responsibility to determine whether or not a move is valid. If a move is not valid, it will allow the
+ * The server has the responsibility to keep track of the game state, 
+ * that includes what stones are one the board,
+ * how many captives of each color there are, whose turn it is, 
+ * how many subsequent passes have occurred. The server
+ * also has the responsibility to determine whether or not a move is valid. 
+ * If a move is not valid, it will allow the
  * client to choose another move.
  *
- * If the client sends a command to the server that is not part of the protocol, the server may close the connection and
- * end the game. If the client sends a command that is part of the protocol, but not supported by the server, the server
- * may not close the connection. If the server sends a non- supported command to the client, the client should continue
- * as normal. If connection to a client is lost or a client is not responsive for more than 60 seconds, the server ends
+ * If the client sends a command to the server that is not part of 
+ * the protocol, the server may close the connection and
+ * end the game. If the client sends a command that is part of the 
+ * protocol, but not supported by the server, the server
+ * may not close the connection. If the server sends a non- supported 
+ * command to the client, the client should continue
+ * as normal. If connection to a client is lost or a client is not responsive 
+ * for more than 60 seconds, the server ends
  * the game and informs the players of this.
  *
- * At this moment, we end the game if two players consecutively pass. How to deal with an appropriate game ending has to
+ * At this moment, we end the game if two players consecutively pass. 
+ * How to deal with an appropriate game ending has to
  * be further elaborated.
  *
  * @author michiel.klitsie
@@ -48,7 +61,7 @@ public interface Constants {
      * Delimiter between command and arguments.
      */
     public static final String DELIMITER = " ";
-    /**
+    /**.
      * Delimiter for 'subarguments', necessary for the Observer protocol
      */
     public static final String SUB_DELIMITER = ";";
@@ -62,27 +75,32 @@ public interface Constants {
      * - Client <-> Server: OPTIONS PLAY
      * - Client -> Server:  PLAY
      * - Server -> Client:  WAITFOROPPONENT
-     * - Server -> Server:  GAMESTART Jan 9 BLACK           (name, boardsize, clientcolor)
-     * - Client -> Server:  MOVE 3 4                        (row, column:  0 <= r/c && r/c < boardsize)
+     * - Server -> Server:  GAMESTART Jan 9 BLACK        (name, boardsize, clientcolor)
+     * - Client -> Server:  MOVE 3 4                     (row, column:  0 <= r/c && r/c < boardsize)
      * - Server -> Client:  MOVE BLACK 3 4
      * - Client -> Server:  MOVE PASS
      * - Server -> Client:  MOVE BLACK PASS
      * - Client -> Server:  GETBOARD
-     * - Server -> Client:  BOARD EEEEEEBEEWWEE... 3 16     (board repr., black captives , white captives)
+     * - Server -> Client:  BOARD EEEEEEBEEWWEE.. 3 16(board repr., black captives , white captives)
      * - Client -> Server:  QUIT
      * - Server -> Client:  GAMEOVER
      *
-     * A client should always say his name first using NEWPLAYER. If a Client sends NEWPLAYER, the SERVER
+     * A client should always say his name first using NEWPLAYER. 
+     * If a Client sends NEWPLAYER, the SERVER
      * should always respond with NEWPLAYERACCEPTED.
      *
-     * A client can always send GETOPTIONS to the server, the server should then respond with OPTIONS plus
+     * A client can always send GETOPTIONS to the server, the server 
+     * should then respond with OPTIONS plus
      * all the commands that the client may send.
      *
-     * A client can always send GETEXTENSIONS to the server, the server should respond with EXTENSIONS and
-     * the designated keywords of the things it responds. This also works vice versa. The server can always
+     * A client can always send GETEXTENSIONS to the server, 
+     * the server should respond with EXTENSIONS and
+     * the designated keywords of the things it responds. 
+     * This also works vice versa. The server can always
      * send GETEXTENSIONS, the client should respond with EXTENSIONS.
      *
-     * The boardstring format is: starting in the upper left corner, traverse all the intersection of the board row by
+     * The boardstring format is: starting in the upper left corner, 
+     * traverse all the intersection of the board row by
      * row. Each white, black and empty intersection is represented by a designated constant.
      */
     public static final String NEWPLAYER  = "NEWPLAYER";
@@ -119,7 +137,7 @@ public interface Constants {
     public static final String STOPGAME = "STOPGAME";
     public static final String CANCELLED = "CANCELLED";
 
-    /**
+    /**.
      * Strings used to denote color
      */
     public static final String WHITE = "WHITE";
@@ -146,7 +164,8 @@ public interface Constants {
      * Server -> Client:    CHAT Jan blabla
      *
      * If you CHAT and are not playing a game, all clients that are not playing a
-     * game, receive the message. If you are playing a game, only your opponent receives the message.
+     * game, receive the message. If you are playing a game, 
+     * only your opponent receives the message.
      *
      * If you are an observer, you cannot chat.
      */
@@ -207,7 +226,8 @@ public interface Constants {
     public static final String HINT = "HINT";
 
     /**
-     * If a client sends a command to the server, and the server cannot produce (one of the) expected response(s), it
+     * If a client sends a command to the server, and the server 
+     * cannot produce (one of the) expected response(s), it
      * will send the command FAILURE, followed by one of the errors listed below.
      *
      * Example:
@@ -237,8 +257,10 @@ public interface Constants {
     public static final String NOTSUPPORTEDCOMMAND = "NotSupportedCommand";
 
     /**
-     * If a client is non-responsive for more than the agreed TIMEOUTSECONDS, the server broadcasts this failure to
-     * the clients and shuts down the game. We define a client as non-responsive if it does not respond for
+     * If a client is non-responsive for more than the agreed TIMEOUTSECONDS, 
+     * the server broadcasts this failure to
+     * the clients and shuts down the game. We define a client as non-responsive 
+     * if it does not respond for
      * TIMEOUTSECONDS while reaction is expected (e.g. when client is expected to move).
      * The player that lets the timeouttime pass.
      */
@@ -250,7 +272,8 @@ public interface Constants {
     public static final String INVALIDMOVE = "InvalidMove";
     public static final String NOTYOURTURN = "NotYourTurn";
     /**
-     * If an argument is not valid for the given situation, the server can send a FAILURE IllegalArgument.
+     * If an argument is not valid for the given situation, 
+     * the server can send a FAILURE IllegalArgument.
      */
     public static final String ILLEGALARGUMENT = "IllegalArgument";
     public static final String OTHERPLAYERCANNOTCHAT = "OtherPlayerCannotChat";
